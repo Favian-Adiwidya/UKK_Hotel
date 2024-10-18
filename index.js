@@ -1,0 +1,25 @@
+const express=require('express')
+const app=express()
+const PORT=8000
+const cors=require('cors')
+app.use(cors())
+app.use(express.static(__dirname))
+const auth=require('./routes/auth.route')
+const userRoute=require('./routes/user.route')
+const tipeKRoute=require('./routes/tipe_kamar.route')
+const PemesananRoute=require('./routes/pemesanan.route')
+const kamarRoute=require('./routes/kamar.route')
+const detailPRoute=require('./routes/detail_pemesanan')
+const customerRoute=require('./routes/customer')
+
+app.use('/login',auth)
+app.use('/user',userRoute)
+app.use('/tipe_kamar',tipeKRoute)
+app.use('/pemesanan',PemesananRoute)
+app.use('/kamar',kamarRoute)
+app.use('/detail_pemesanan',detailPRoute)
+app.use('/customer',customerRoute)
+
+app.listen(PORT,()=>{
+    console.log(`Port Servernya ${PORT} ✨`)
+})
