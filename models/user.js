@@ -11,7 +11,6 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      this.hasMany(models.pemesanan,{foreignKey:'id_user',as:'pemesanan'});
     }
   }
   user.init({
@@ -27,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
       unique: true
     },
     password: DataTypes.TEXT,
-    role: DataTypes.ENUM('admin','resepsionis')
+    role: DataTypes.ENUM('admin', 'resepsionis')
   }, {
     sequelize,
     modelName: 'user',

@@ -11,10 +11,9 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      this.hasMany(models.detail_pemesanan,{foreignKey:'id_pemesanan',as:'detail_pemesanan'});
-      this.belongsTo(models.tipe_kamar,{foreignKey:'id_tipe_kamar',as:'tipe_kamar'});
-      this.belongsTo(models.customer,{foreignKey:'id_customer',as:'customer'});
-      this.belongsTo(models.user,{foreignKey:'id_user',as:'user'});
+      this.hasMany(models.detail_pemesanan, { foreignKey: 'id_pemesanan', as: 'detail_pemesanan' });
+      this.belongsTo(models.tipe_kamar, { foreignKey: 'id_tipe_kamar', as: 'tipe_kamar' });
+      this.belongsTo(models.customer, { foreignKey: 'id_customer', as: 'customer' });
     }
   }
   pemesanan.init({
@@ -31,8 +30,7 @@ module.exports = (sequelize, DataTypes) => {
     nama_tamu: DataTypes.STRING,
     jumlah_kamar: DataTypes.INTEGER,
     id_tipe_kamar: DataTypes.INTEGER,
-    status_pemesanan: DataTypes.ENUM('baru','check_in','check_out'),
-    id_user: DataTypes.INTEGER
+    status_pemesanan: DataTypes.ENUM('baru', 'check_in', 'check_out')
   }, {
     sequelize,
     modelName: 'pemesanan',

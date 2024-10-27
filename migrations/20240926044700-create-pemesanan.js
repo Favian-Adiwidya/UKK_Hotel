@@ -14,7 +14,7 @@ module.exports = {
       },
       id_customer: {
         type: Sequelize.INTEGER,
-        references:{
+        references: {
           model: "customers",
           key: "id_customer"
         }
@@ -36,20 +36,13 @@ module.exports = {
       },
       id_tipe_kamar: {
         type: Sequelize.INTEGER,
-        references:{
+        references: {
           model: "tipe_kamars",
           key: "id_tipe_kamar"
         }
       },
       status_pemesanan: {
-        type: Sequelize.ENUM('baru','check_in','check_out')
-      },
-      id_user: {
-        type: Sequelize.INTEGER,
-        references:{
-          model: "users",
-          key: "id_user"
-        }
+        type: Sequelize.ENUM('Check_In', 'Check_Out')
       },
       createdAt: {
         allowNull: false,

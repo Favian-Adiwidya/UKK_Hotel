@@ -104,19 +104,39 @@ exports.findDetailPemesanan = async (req, res) => {
         });
     }
 }
-exports.findTglPemesanan = async (req, res) => {
+exports.findTglCheckInOut = async (req, res) => {
     try {
         const tgl_check_in = req.params.tgl_check_in;
         const tgl_check_out = req.params.tgl_check_out;
 
         let pemesanan = await pemesananModel.findAll({
             where: {
-                tgl_check_in: {
-                    [Op.between]: [tgl_check_in, tgl_check_out]
-                },
-                tgl_check_out: {
-                    [Op.between]: [tgl_check_in, tgl_check_out]
-                }
+                [Op.or]: [
+                    {
+                        tgl_check_in: {
+                            [Op.between]: [tgl_check_in, tgl_check_out]
+                        }
+                    },
+                    {
+                        tgl_check_out: {
+                            [Op.between]: [tgl_check_in, tgl_check_out]
+                        }
+                    },
+                    {
+                        [Op.and]: [
+                            {
+                                tgl_check_in: {
+                                    [Op.lte]: tgl_check_in
+                                }
+                            },
+                            {
+                                tgl_check_out: {
+                                    [Op.gte]: tgl_check_out
+                                }
+                            }
+                        ]
+                    }
+                ]
             },
             include: [
                 {
@@ -129,7 +149,7 @@ exports.findTglPemesanan = async (req, res) => {
         if (!pemesanan || pemesanan.length === 0) {
             return res.json({
                 success: false,
-                message: "Tidak ada pemesanan ditemukan untuk tanggal check-in dan check-out tersebut"
+                message: "Tidak ada pemesanan ditemukan diantara tanggal yang diinputkan"
             });
         }
 
@@ -173,3 +193,121 @@ exports.findTglPemesanan = async (req, res) => {
         });
     }
 }
+exports.findTglPemesanan = async (req, res) => {
+    try {
+        let tgl_awal = new Date(req.params.tgl_awal);
+        let tgl_akhir = new Date(req.params.tgl_akhir);
+
+        tgl_awal.setHours(0, 0, 0, 0);
+        tgl_akhir.setHours(23, 59, 59, 999);
+
+        let pemesanan = await pemesananModel.findAll({
+            where: {
+                tgl_pemesanan: {
+                    [Op.gte]: tgl_awal,
+                    [Op.lte]: tgl_akhir
+                }
+            },
+            include: [
+                {
+                    model: customerModel,
+                    as: 'customer'
+                }
+            ]
+        });
+
+        if (!pemesanan || pemesanan.length === 0) {
+            return res.json({
+                success: false,
+                message: "Tidak ada pemesanan ditemukan diantara tanggal yang diinputkan"
+            });
+        }
+
+        const idPemesananList = pemesanan.map(p => p.id_pemesanan);
+
+        let detailPemesanan = await detailPModel.findAll({
+            where: {
+                id_pemesanan: idPemesananList
+            },
+            include: [
+                {
+                    model: pemesananModel,
+                    as: 'pemesanan'
+                },
+                {
+                    model: customerModel,
+                    as: 'customer'
+                }
+            ]
+        });
+
+        if (!detailPemesanan || detailPemesanan.length === 0) {
+            return res.json({
+                success: false,
+                message: "Detail pemesanan tidak ditemukan untuk tanggal tersebut"
+            });
+        }
+
+        return res.json({
+            success: true,
+            message: 'Data pemesanan berdasarkan tanggal berhasil ditemukan',
+            result: {
+                pemesanan,
+                detailPemesanan
+            }
+        });
+    } catch (error) {
+        return res.json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+exports.checkOutCustomer = async (req, res) => {
+    try {
+        const { id_pemesanan } = req.params;
+
+        // Cari detail pemesanan berdasarkan id_pemesanan
+        const pemesanan = await pemesananModel.findOne({
+            where: { id_pemesanan: id_pemesanan }
+        });
+
+        // Jika tidak ditemukan, kirim pesan error
+        if (!pemesanan) {
+            return res.json({
+                success: false,
+                message: 'Pemesanan tidak ditemukan'
+            });
+        }
+
+        // Cari kamar-kamar yang dipesan dalam detail pemesanan tersebut
+        const detailPemesanan = await detailPModel.findAll({
+            where: { id_pemesanan: id_pemesanan }
+        });
+
+        // Loop melalui setiap kamar di detail pemesanan dan ubah statusnya menjadi "Tersedia"
+        for (const detail of detailPemesanan) {
+            await kamarModel.update(
+                { status: 'Tersedia' }, // Ubah status kamar menjadi "Tersedia"
+                { where: { id_kamar: detail.id_kamar } } // Berdasarkan id_kamar di detail pemesanan
+            );
+        }
+
+        // Update status pemesanan menjadi "Selesai" atau "Check-out"
+        await pemesananModel.update(
+            { status_pemesanan: 'Check_Out' },
+            { where: { id_pemesanan: id_pemesanan } }
+        );
+
+        // Kirimkan response sukses
+        return res.json({
+            success: true,
+            message: 'Check-out berhasil. Status kamar telah diperbarui menjadi tersedia.'
+        });
+    } catch (error) {
+        return res.json({
+            success: false,
+            message: error.message
+        });
+    }
+};

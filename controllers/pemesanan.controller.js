@@ -83,8 +83,7 @@ exports.addPemesanan = async (req, res) => {
             tgl_check_in: new Date(req.body.tgl_check_in),
             tgl_check_out: new Date(req.body.tgl_check_out),
             jumlah_kamar: req.body.jumlah_kamar,
-            status_pemesanan: "baru",
-            id_user: req.body.id_user,
+            status_pemesanan: "Check_In",
             nama_tamu: customer.nama,
             tgl_pemesanan: tgl_pemesanan
         }
@@ -104,7 +103,7 @@ exports.addPemesanan = async (req, res) => {
                 tgl_akses: new Date(),
                 harga: hargaKamar.harga
             })
-            await kamarModel.update({status:"Dipesan"},{where:{id_kamar:kamar.id_kamar}})
+            await kamarModel.update({ status: "Dipesan" }, { where: { id_kamar: kamar.id_kamar } })
         }
         return res.json({
             success: true,
